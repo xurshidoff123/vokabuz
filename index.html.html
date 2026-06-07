@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vokab.uz — Nemis tili platformasi</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1B3A6B; --navy-dark: #0f2347; --navy-light: #243f70;
+    --gold: #F5A623; --gold-dark: #d4881a; --gold-light: #ffc04d;
+    --off-white: #f7f8fc; --gray-100: #f0f2f8; --gray-200: #e2e6f0;
+    --gray-400: #9aa3be; --gray-600: #5a6380; --text: #1a2140;
+    --success: #2ecc71; --radius: 14px;
+    --shadow: 0 8px 32px rgba(27,58,107,0.12);
+    --shadow-lg: 0 20px 60px rgba(27,58,107,0.18);
+    --bg: #f7f8fc; --card-bg: #ffffff; --topbar-bg: #ffffff;
+    --sidebar-bg: #0f2347; --border: #e2e6f0;
+  }
+  [data-theme="dark"] {
+    --off-white: #0e1520; --bg: #0e1520; --card-bg: #18243a;
+    --topbar-bg: #121d30; --sidebar-bg: #080f1c;
+    --gray-100: #1a2540; --gray-200: #243050; --border: #243050;
+    --gray-400: #6a7ba0; --gray-600: #8a9bbf; --text: #e8edf8;
+    --shadow: 0 8px 32px rgba(0,0,0,0.35); --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; transition:background 0.3s, color 0.3s; }
+
+  .page { display:none; min-height:100vh; }
+  .page.active { display:flex; }
+
+  /* TOAST NOTIFICATIONS */
+  #toastContainer { position:fixed; top:24px; right:24px; z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+  .toast { display:flex; align-items:center; gap:12px; padding:14px 18px; background:var(--navy-dark); color:white; border-radius:12px; font-size:14px; font-weight:500; box-shadow:var(--shadow-lg); pointer-events:auto; transform:translateX(120%); transition:transform 0.4s cubic-bezier(.22,.68,0,1.2); max-width:340px; border-left:4px solid var(--gold); }
+  .toast.show { transform:translateX(0); }
+  .toast-icon { font-size:20px; flex-shrink:0; }
+  .toast-close { margin-left:auto; cursor:pointer; opacity:0.5; font-size:16px; }
+  .toast-close:hover { opacity:1; }
+  [data-theme="dark"] .toast { background:#18243a; }
+
+  /* LOGIN */
+  #loginPage { background:var(--navy-dark); align-items:stretch; }
+  .login-left {
+    flex:1; background:linear-gradient(135deg,var(--navy-dark) 0%,var(--navy) 60%,var(--navy-light) 100%);
+    display:flex; flex-direction:column; justify-content:center; align-items:center;
+    padding:60px; position:relative; overflow:hidden;
+  }
+  .login-left::before { content:''; position:absolute; width:400px; height:400px; border-radius:50%; background:var(--gold); opacity:0.05; top:-100px; right:-100px; }
+  .login-logo { display:flex; align-items:center; gap:16px; margin-bottom:60px; }
+  .login-logo-icon { width:64px; height:64px; background:var(--gold); border-radius:16px; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:32px; font-weight:900; color:var(--navy-dark); }
+  .login-logo-text { font-family:'Playfair Display',serif; font-size:36px; font-weight:700; color:white; }
+  .login-logo-text span { color:var(--gold); }
+  .login-hero h1 { font-family:'Playfair Display',serif; font-size:48px; font-weight:900; color:white; line-height:1.2; margin-bottom:20px; text-align:center; }
+  .login-hero h1 em { font-style:italic; color:var(--gold); }
+  .login-hero p { color:rgba(255,255,255,0.6); font-size:16px; text-align:center; line-height:1.7; max-width:360px; }
+  .login-levels { display:flex; gap:12px; margin-top:40px; }
+  .level-badge { padding:8px 16px; border:1px solid rgba(245,166,35,0.3); border-radius:40px; color:var(--gold); font-size:13px; font-weight:500; }
+  .login-right { width:500px; background:white; display:flex; flex-direction:column; justify-content:center; padding:50px 46px; overflow-y:auto; }
+  .lang-switcher { display:flex; gap:8px; margin-bottom:36px; }
+  .lang-btn { padding:6px 14px; border-radius:20px; border:1.5px solid var(--gray-200); background:none; font-size:13px; font-weight:500; color:var(--gray-600); cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+  .lang-btn.active { background:var(--navy); color:white; border-color:var(--navy); }
+  .login-form h2 { font-family:'Playfair Display',serif; font-size:30px; font-weight:700; color:var(--navy-dark); margin-bottom:8px; }
+  .login-form p { color:var(--gray-400); font-size:14px; margin-bottom:28px; }
+  .form-group { margin-bottom:18px; }
+  .form-group label { display:block; font-size:13px; font-weight:600; color:var(--navy); margin-bottom:8px; }
+  .form-group input { width:100%; padding:14px 18px; border:2px solid var(--gray-200); border-radius:var(--radius); font-size:15px; font-family:'DM Sans',sans-serif; color:var(--text); transition:border-color 0.2s; outline:none; background:var(--off-white); }
+  .form-group input:focus { border-color:var(--navy); background:white; }
+  .form-options { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; font-size:13px; }
+  .remember { display:flex; align-items:center; gap:8px; color:var(--gray-600); cursor:pointer; }
+  .forgot { color:var(--navy); font-weight:500; text-decoration:none; }
+  .btn-primary { width:100%; padding:16px; background:var(--navy); color:white; border:none; border-radius:var(--radius); font-size:16px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; }
+  .btn-primary:hover { background:var(--navy-dark); transform:translateY(-1px); }
+  .btn-google { width:100%; padding:14px; background:white; color:#3c4043; border:2px solid #e0e0e0; border-radius:var(--radius); font-size:15px; font-weight:500; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.2s; display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:4px; }
+  .btn-google:hover { background:#f8f8f8; border-color:#bbb; transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+  .btn-google svg { width:20px; height:20px; flex-shrink:0; }
+  .divider { text-align:center; color:var(--gray-400); font-size:13px; margin:20px 0; position:relative; }
+  .divider::before,.divider::after { content:''; position:absolute; top:50%; width:42%; height:1px; background:var(--gray-200); }
+  .divider::before { left:0; } .divider::after { right:0; }
+  .register-link { text-align:center; font-size:14px; color:var(--gray-600); margin-top:16px; }
+  .register-link a { color:var(--gold-dark); font-weight:600; text-decoration:none; }
+
+  /* PLATFORM */
+  #platformPage { flex-direction:row; }
+  .sidebar { width:260px; background:var(--sidebar-bg); display:flex; flex-direction:column; position:fixed; top:0; left:0; height:100vh; z-index:100; transition:background 0.3s; }
+  .sidebar-logo { padding:28px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .sidebar-logo-icon { width:40px; height:40px; background:var(--gold); border-radius:10px; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:20px; font-weight:900; color:var(--navy-dark); }
+  .sidebar-logo-text { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:white; }
+  .sidebar-logo-text span { color:var(--gold); }
+  .sidebar-user { padding:20px 24px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.07); }
+  .user-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:var(--navy-dark); position:relative; }
+  .premium-crown { position:absolute; top:-6px; right:-6px; font-size:12px; }
+  .user-info { flex:1; }
+  .user-name { font-size:14px; font-weight:600; color:white; }
+  .user-level { font-size:11px; color:var(--gold); font-weight:500; margin-top:2px; }
+  .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+  .nav-section-title { font-size:10px; font-weight:700; color:rgba(255,255,255,0.3); letter-spacing:1.5px; text-transform:uppercase; padding:12px 12px 6px; }
+  .nav-item { display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; color:rgba(255,255,255,0.6); cursor:pointer; transition:all 0.2s; font-size:14px; font-weight:500; margin-bottom:2px; }
+  .nav-item:hover { background:rgba(255,255,255,0.07); color:white; }
+  .nav-item.active { background:var(--gold); color:var(--navy-dark); font-weight:600; }
+  .nav-icon { font-size:18px; width:22px; text-align:center; }
+  .nav-badge { margin-left:auto; background:var(--gold); color:var(--navy-dark); font-size:11px; font-weight:700; padding:2px 7px; border-radius:10px; }
+  .nav-item.active .nav-badge { background:var(--navy-dark); color:var(--gold); }
+  .nav-item .premium-lock { margin-left:auto; font-size:12px; opacity:0.5; }
+  .sidebar-bottom { padding:16px 12px; border-top:1px solid rgba(255,255,255,0.07); }
+  .logout-btn { display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:10px; color:rgba(255,255,255,0.4); cursor:pointer; font-size:14px; font-weight:500; transition:all 0.2s; width:100%; background:none; border:none; font-family:'DM Sans',sans-serif; }
+  .logout-btn:hover { color:#ff6b6b; background:rgba(255,107,107,0.1); }
+
+  .main-content { margin-left:260px; flex:1; display:flex; flex-direction:column; min-height:100vh; background:var(--bg); transition:background 0.3s; }
+  .topbar { background:var(--topbar-bg); padding:14px 28px; display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; transition:background 0.3s, border-color 0.3s; }
+  .topbar-title { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--navy-dark); flex:1; }
+  [data-theme="dark"] .topbar-title { color:#e8edf8; }
+  .topbar-lang { display:flex; gap:5px; }
+  .topbar-lang button { padding:5px 11px; border-radius:8px; border:1.5px solid var(--border); background:none; font-size:12px; font-weight:600; color:var(--gray-600); cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+  .topbar-lang button.active { background:var(--navy); color:white; border-color:var(--navy); }
+  .xp-badge { display:flex; align-items:center; gap:8px; background:var(--gold); color:var(--navy-dark); padding:7px 14px; border-radius:20px; font-size:13px; font-weight:700; }
+  .dark-toggle { width:38px; height:22px; border-radius:11px; background:var(--gray-200); border:none; cursor:pointer; position:relative; transition:background 0.3s; flex-shrink:0; }
+  .dark-toggle::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:var(--navy); transition:transform 0.3s, background 0.3s; }
+  [data-theme="dark"] .dark-toggle { background:var(--gold); }
+  [data-theme="dark"] .dark-toggle::after { transform:translateX(16px); background:var(--navy-dark); }
+  .notif-btn { width:38px; height:38px; border-radius:10px; background:var(--gray-100); border:1.5px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:17px; position:relative; transition:all 0.2s; }
+  .notif-btn:hover { background:var(--navy); border-color:var(--navy); }
+  .notif-dot { position:absolute; top:5px; right:5px; width:8px; height:8px; border-radius:50%; background:#e74c3c; border:2px solid var(--topbar-bg); }
+
+  .content-section { display:none; padding:28px 32px; }
+  .content-section.active { display:block; }
+
+  .welcome-banner { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%); border-radius:20px; padding:32px 40px; color:white; margin-bottom:24px; position:relative; overflow:hidden; }
+  .welcome-banner::after { content:'V'; position:absolute; right:40px; top:50%; transform:translateY(-50%); font-family:'Playfair Display',serif; font-size:160px; font-weight:900; color:rgba(255,255,255,0.04); line-height:1; }
+  .welcome-banner h2 { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; margin-bottom:8px; }
+  .welcome-banner h2 span { color:var(--gold); }
+  .welcome-banner p { color:rgba(255,255,255,0.7); font-size:14px; margin-bottom:20px; }
+  .btn-gold { display:inline-flex; align-items:center; gap:8px; padding:11px 22px; background:var(--gold); color:var(--navy-dark); border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+  .btn-gold:hover { background:var(--gold-light); transform:translateY(-1px); }
+
+  /* PREMIUM BANNER */
+  .premium-banner { background:linear-gradient(135deg,#7c3aed 0%,#a855f7 50%,#ec4899 100%); border-radius:16px; padding:20px 24px; color:white; margin-bottom:24px; display:flex; align-items:center; gap:20px; }
+  .premium-banner .pb-icon { font-size:32px; }
+  .premium-banner .pb-info { flex:1; }
+  .premium-banner .pb-info h3 { font-size:16px; font-weight:700; margin-bottom:4px; }
+  .premium-banner .pb-info p { font-size:13px; opacity:0.85; }
+  .btn-upgrade { padding:10px 22px; background:white; color:#7c3aed; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; white-space:nowrap; }
+  .btn-upgrade:hover { transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,0,0,0.2); }
+
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+  .stat-card { background:var(--card-bg); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); border-left:4px solid transparent; transition:background 0.3s; }
+  .stat-card:nth-child(1) { border-left-color:var(--gold); }
+  .stat-card:nth-child(2) { border-left-color:#3498db; }
+  .stat-card:nth-child(3) { border-left-color:var(--success); }
+  .stat-card:nth-child(4) { border-left-color:#e74c3c; }
+  .stat-label { font-size:12px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px; }
+  .stat-value { font-family:'Playfair Display',serif; font-size:32px; font-weight:700; color:var(--navy-dark); line-height:1; margin-bottom:4px; }
+  [data-theme="dark"] .stat-value { color:#e8edf8; }
+  .stat-sub { font-size:12px; color:var(--gray-400); }
+
+  .dashboard-grid { display:grid; grid-template-columns:1fr 340px; gap:20px; }
+  .card { background:var(--card-bg); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); transition:background 0.3s; }
+  .card-title { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; color:var(--navy-dark); margin-bottom:20px; display:flex; align-items:center; gap:10px; }
+  [data-theme="dark"] .card-title { color:#e8edf8; }
+
+  .continue-lesson { display:flex; align-items:center; gap:16px; padding:16px; border-radius:12px; background:var(--off-white); margin-bottom:12px; cursor:pointer; transition:all 0.2s; border:2px solid transparent; }
+  .continue-lesson:hover { border-color:var(--navy); background:var(--card-bg); }
+  .lesson-icon { width:48px; height:48px; border-radius:12px; background:var(--navy); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+  .lesson-info { flex:1; }
+  .lesson-name { font-size:14px; font-weight:600; color:var(--text); margin-bottom:4px; }
+  .lesson-meta { font-size:12px; color:var(--gray-400); }
+  .progress-bar { height:6px; background:var(--gray-200); border-radius:3px; margin-top:8px; overflow:hidden; }
+  .progress-fill { height:100%; background:linear-gradient(90deg,var(--navy),var(--gold)); border-radius:3px; transition:width 0.5s ease; }
+
+  .streak-card { text-align:center; padding:20px; }
+  .streak-number { font-family:'Playfair Display',serif; font-size:60px; font-weight:900; color:var(--gold); line-height:1; margin:8px 0; }
+  .streak-label { font-size:13px; color:var(--gray-600); font-weight:500; }
+  .streak-days { display:flex; justify-content:center; gap:8px; margin-top:16px; }
+  .day-dot { width:32px; height:32px; border-radius:50%; background:var(--gray-200); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--gray-400); }
+  .day-dot.done { background:var(--gold); color:var(--navy-dark); }
+  .day-dot.today { background:var(--navy); color:white; border:2px solid var(--gold); }
+
+  .levels-header { display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap; }
+  .level-filter { padding:8px 20px; border-radius:20px; border:2px solid var(--border); background:none; font-size:13px; font-weight:600; color:var(--gray-600); cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+  .level-filter.active { background:var(--navy); color:white; border-color:var(--navy); }
+  .levels-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+  .level-card { background:var(--card-bg); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); cursor:pointer; transition:all 0.25s; border:2px solid transparent; }
+  .level-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); border-color:var(--gold); }
+  .level-card-header { padding:24px; position:relative; }
+  .level-card-header.a1 { background:linear-gradient(135deg,#667eea,#764ba2); }
+  .level-card-header.a2 { background:linear-gradient(135deg,#f093fb,#f5576c); }
+  .level-card-header.b1 { background:linear-gradient(135deg,#4facfe,#00f2fe); }
+  .level-card-header.b2 { background:linear-gradient(135deg,#43e97b,#38f9d7); }
+  .level-card-header.c1 { background:linear-gradient(135deg,#fa709a,#fee140); }
+  .level-card-header.c2 { background:linear-gradient(135deg,var(--navy),var(--gold)); }
+  .level-tag { font-family:'Playfair Display',serif; font-size:36px; font-weight:900; color:white; opacity:0.9; }
+  .level-status { position:absolute; top:16px; right:16px; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:700; background:rgba(255,255,255,0.2); color:white; }
+  .level-status.locked { background:rgba(0,0,0,0.2); }
+  .level-status.active { background:var(--gold); color:var(--navy-dark); }
+  .level-card-body { padding:20px; }
+  .level-card-name { font-size:16px; font-weight:700; color:var(--navy-dark); margin-bottom:4px; }
+  [data-theme="dark"] .level-card-name { color:#e8edf8; }
+  .level-card-desc { font-size:13px; color:var(--gray-400); margin-bottom:16px; }
+  .level-progress { margin-bottom:16px; }
+  .level-progress-label { display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:var(--gray-600); margin-bottom:6px; }
+  .level-topics { display:flex; flex-wrap:wrap; gap:6px; }
+  .topic-tag { padding:4px 10px; background:var(--gray-100); border-radius:6px; font-size:11px; color:var(--gray-600); font-weight:500; }
+
+  .lessons-list { display:flex; flex-direction:column; gap:12px; }
+  .lesson-row { background:var(--card-bg); border-radius:14px; padding:20px 24px; display:flex; align-items:center; gap:20px; box-shadow:var(--shadow); cursor:pointer; transition:all 0.2s; border:2px solid transparent; }
+  .lesson-row:hover { border-color:var(--navy); transform:translateX(4px); }
+  .lesson-number { width:44px; height:44px; border-radius:12px; background:var(--navy); color:white; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:18px; font-weight:700; flex-shrink:0; }
+  .lesson-number.done { background:var(--success); }
+  .lesson-number.locked { background:var(--gray-200); color:var(--gray-400); }
+  .lesson-row-info { flex:1; }
+  .lesson-row-name { font-size:15px; font-weight:600; color:var(--text); margin-bottom:4px; }
+  .lesson-row-meta { font-size:12px; color:var(--gray-400); display:flex; gap:16px; }
+  .lesson-row-right { display:flex; align-items:center; gap:12px; }
+  .lesson-xp { padding:4px 10px; background:var(--gold); color:var(--navy-dark); border-radius:8px; font-size:12px; font-weight:700; }
+  .lesson-action { padding:8px 20px; background:var(--navy); color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+  .lesson-action:hover { background:var(--gold); color:var(--navy-dark); }
+  .lesson-action.locked { background:var(--gray-200); color:var(--gray-400); cursor:not-allowed; }
+
+  /* VOCABULARY with audio */
+  .vocab-word-area { text-align:center; padding:36px 20px; }
+  .vocab-word-label { font-size:13px; color:var(--gray-400); margin-bottom:10px; }
+  .vocab-big-word { font-family:'Playfair Display',serif; font-size:56px; font-weight:900; color:var(--navy-dark); margin-bottom:6px; }
+  [data-theme="dark"] .vocab-big-word { color:#e8edf8; }
+  .vocab-phonetic { font-size:15px; color:var(--gray-400); margin-bottom:20px; }
+  .audio-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 22px; background:var(--off-white); border:2px solid var(--border); border-radius:30px; font-size:14px; font-weight:600; cursor:pointer; color:var(--navy); transition:all 0.2s; font-family:'DM Sans',sans-serif; }
+  .audio-btn:hover { background:var(--navy); color:white; border-color:var(--navy); }
+  .audio-btn.playing { background:var(--navy); color:white; border-color:var(--navy); animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+
+  /* FLASHCARD */
+  .flashcard-container { perspective:1000px; max-width:500px; margin:0 auto 28px; }
+  .flashcard { width:100%; height:260px; position:relative; transform-style:preserve-3d; transition:transform 0.6s cubic-bezier(.4,0,.2,1); cursor:pointer; }
+  .flashcard.flipped { transform:rotateY(180deg); }
+  .flashcard-face { position:absolute; width:100%; height:100%; border-radius:20px; backface-visibility:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px; box-shadow:var(--shadow-lg); }
+  .flashcard-front { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%); color:white; }
+  .flashcard-back { background:linear-gradient(135deg,#2d7a4f,#27ae60); color:white; transform:rotateY(180deg); }
+  .flashcard-hint { font-size:12px; opacity:0.6; margin-bottom:16px; text-transform:uppercase; letter-spacing:1px; }
+  .flashcard-word { font-family:'Playfair Display',serif; font-size:44px; font-weight:900; margin-bottom:10px; }
+  .flashcard-phonetic { font-size:16px; opacity:0.7; }
+  .flashcard-translation { font-family:'Playfair Display',serif; font-size:36px; font-weight:700; margin-bottom:10px; }
+  .flashcard-example { font-size:14px; opacity:0.8; text-align:center; line-height:1.5; }
+  .flashcard-controls { display:flex; align-items:center; justify-content:center; gap:16px; margin-top:8px; }
+  .fc-btn { padding:12px 28px; border-radius:12px; border:none; font-size:14px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+  .fc-btn.wrong { background:#fee2e2; color:#dc2626; }
+  .fc-btn.wrong:hover { background:#dc2626; color:white; }
+  .fc-btn.right { background:#dcfce7; color:#16a34a; }
+  .fc-btn.right:hover { background:#16a34a; color:white; }
+  .fc-counter { font-size:14px; font-weight:600; color:var(--gray-400); padding:0 8px; }
+  .fc-progress { width:100%; max-width:500px; margin:0 auto 20px; }
+  .fc-progress-bar { height:8px; background:var(--gray-200); border-radius:4px; overflow:hidden; }
+  .fc-progress-fill { height:100%; background:linear-gradient(90deg,var(--success),#27ae60); border-radius:4px; transition:width 0.4s; }
+  .fc-stats { display:flex; gap:16px; justify-content:center; margin-top:16px; }
+  .fc-stat { text-align:center; padding:12px 20px; border-radius:12px; background:var(--off-white); }
+  .fc-stat .val { font-size:24px; font-weight:700; font-family:'Playfair Display',serif; }
+  .fc-stat .lbl { font-size:11px; color:var(--gray-400); font-weight:600; margin-top:2px; }
+
+  /* CERTIFICATE */
+  .cert-card { background:var(--card-bg); border-radius:20px; padding:0; overflow:hidden; box-shadow:var(--shadow-lg); margin-bottom:24px; border:2px solid var(--gold); }
+  .cert-header { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%); padding:36px; text-align:center; color:white; position:relative; overflow:hidden; }
+  .cert-header::before { content:''; position:absolute; inset:0; background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); }
+  .cert-logo { font-size:40px; margin-bottom:12px; }
+  .cert-title { font-family:'Playfair Display',serif; font-size:13px; font-weight:600; letter-spacing:3px; text-transform:uppercase; opacity:0.7; margin-bottom:8px; }
+  .cert-name { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; margin-bottom:6px; }
+  .cert-sub { opacity:0.7; font-size:14px; }
+  .cert-body { padding:32px 36px; }
+  .cert-level-badge { display:inline-block; padding:12px 28px; background:linear-gradient(135deg,var(--gold),var(--gold-dark)); color:var(--navy-dark); border-radius:40px; font-family:'Playfair Display',serif; font-size:24px; font-weight:900; margin:0 auto 20px; }
+  .cert-details { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:20px 0; }
+  .cert-detail { text-align:center; padding:16px; background:var(--off-white); border-radius:12px; }
+  .cert-detail .cd-val { font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--navy-dark); }
+  [data-theme="dark"] .cert-detail .cd-val { color:#e8edf8; }
+  .cert-detail .cd-lbl { font-size:11px; color:var(--gray-400); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-top:4px; }
+  .cert-locked-overlay { text-align:center; padding:36px; background:var(--off-white); border-radius:16px; }
+  .cert-locked-overlay h3 { font-size:18px; font-weight:700; color:var(--navy-dark); margin:12px 0 8px; }
+  [data-theme="dark"] .cert-locked-overlay h3 { color:#e8edf8; }
+  .cert-locked-overlay p { font-size:14px; color:var(--gray-400); margin-bottom:20px; }
+  .btn-download { display:inline-flex; align-items:center; gap:8px; padding:12px 24px; background:var(--navy); color:white; border:none; border-radius:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; }
+  .btn-download:hover { background:var(--navy-dark); transform:translateY(-1px); }
+
+  /* PROFILE */
+  .profile-header { background:linear-gradient(135deg,var(--navy) 0%,var(--navy-light) 100%); border-radius:20px; padding:36px; display:flex; align-items:center; gap:28px; margin-bottom:24px; color:white; }
+  .profile-avatar { width:90px; height:90px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:36px; font-weight:900; color:var(--navy-dark); border:4px solid rgba(255,255,255,0.3); position:relative; }
+  .profile-premium-badge { position:absolute; bottom:-4px; right:-4px; background:linear-gradient(135deg,#7c3aed,#ec4899); color:white; font-size:9px; font-weight:700; padding:3px 7px; border-radius:8px; border:2px solid white; }
+  .profile-info h2 { font-family:'Playfair Display',serif; font-size:26px; font-weight:700; margin-bottom:6px; }
+  .profile-info p { color:rgba(255,255,255,0.6); font-size:14px; }
+  .profile-level-badge { margin-left:auto; padding:10px 24px; background:var(--gold); color:var(--navy-dark); border-radius:12px; font-weight:700; font-size:15px; }
+  .profile-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .achievements { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:4px; }
+  .achievement { text-align:center; padding:16px 10px; border-radius:12px; background:var(--off-white); }
+  .achievement-icon { font-size:28px; margin-bottom:8px; }
+  .achievement-name { font-size:11px; font-weight:600; color:var(--gray-600); }
+  .achievement.locked { opacity:0.4; filter:grayscale(1); }
+
+  /* PAYMENT MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--card-bg); border-radius:24px; padding:0; width:540px; max-width:95vw; box-shadow:0 40px 100px rgba(0,0,0,0.3); overflow:hidden; animation:modalIn 0.3s cubic-bezier(.22,.68,0,1.2); }
+  @keyframes modalIn { from{opacity:0;transform:scale(0.92) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
+  .modal-header { background:linear-gradient(135deg,#7c3aed 0%,#a855f7 50%,#ec4899 100%); padding:32px 36px 28px; color:white; text-align:center; }
+  .modal-header h2 { font-family:'Playfair Display',serif; font-size:26px; font-weight:900; margin:12px 0 6px; }
+  .modal-header p { opacity:0.85; font-size:14px; }
+  .modal-body { padding:28px 36px 32px; }
+  .plan-cards { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px; }
+  .plan-card { border:2px solid var(--border); border-radius:16px; padding:20px 18px; cursor:pointer; transition:all 0.2s; position:relative; }
+  .plan-card.selected { border-color:#7c3aed; background:rgba(124,58,237,0.05); }
+  .plan-card .plan-badge { position:absolute; top:-10px; left:50%; transform:translateX(-50%); background:linear-gradient(135deg,#7c3aed,#ec4899); color:white; font-size:10px; font-weight:700; padding:3px 12px; border-radius:10px; white-space:nowrap; }
+  .plan-card h3 { font-size:15px; font-weight:700; color:var(--text); margin-bottom:4px; }
+  .plan-price { font-family:'Playfair Display',serif; font-size:28px; font-weight:900; color:#7c3aed; }
+  .plan-price span { font-size:13px; font-weight:500; color:var(--gray-400); font-family:'DM Sans',sans-serif; }
+  .plan-features { margin-top:12px; display:flex; flex-direction:column; gap:6px; }
+  .plan-features li { list-style:none; font-size:12px; color:var(--gray-600); display:flex; align-items:center; gap:6px; }
+  .plan-features li::before { content:'✓'; color:#7c3aed; font-weight:700; }
+  .payment-form h4 { font-size:14px; font-weight:700; color:var(--text); margin-bottom:14px; }
+  .pay-input { width:100%; padding:12px 16px; border:2px solid var(--border); border-radius:10px; font-size:14px; font-family:'DM Sans',sans-serif; color:var(--text); background:var(--off-white); margin-bottom:12px; outline:none; transition:border-color 0.2s; }
+  .pay-input:focus { border-color:#7c3aed; background:var(--card-bg); }
+  .pay-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .btn-pay { width:100%; padding:15px; background:linear-gradient(135deg,#7c3aed,#a855f7); color:white; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.2s; margin-top:8px; }
+  .btn-pay:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(124,58,237,0.4); }
+  .modal-close { position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.2); border:none; cursor:pointer; color:white; font-size:18px; display:flex; align-items:center; justify-content:center; }
+  .modal-header { position:relative; }
+  .secure-note { text-align:center; font-size:12px; color:var(--gray-400); margin-top:12px; }
+
+  @keyframes fadeInUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .content-section.active > * { animation:fadeInUp 0.4s ease forwards; }
+  @media(max-width:1100px) { .stats-grid { grid-template-columns:repeat(2,1fr); } .levels-grid { grid-template-columns:repeat(2,1fr); } .dashboard-grid { grid-template-columns:1fr; } }
+
+.ai-chat-card{max-width:900px;margin:0 auto;background:#fff;border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+.chat-box{height:420px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:12px;padding:15px;margin-bottom:15px}
+.msg{padding:10px 14px;border-radius:12px;margin:8px 0;max-width:75%}
+.ai{background:#f3f4f6}
+.user{background:#F5A623;color:#111;margin-left:auto}
+.chat-row{display:flex;gap:10px}
+.chat-row input{flex:1;padding:12px;border:1px solid #ddd;border-radius:10px}
+.chat-row button{padding:12px 18px;border:none;border-radius:10px;background:#F5A623;cursor:pointer}
+
+</style>
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer"></div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closePayment()">✕</button>
+      <div style="font-size:36px">👑</div>
+      <h2 data-uz="Premium obuna" data-en="Premium Subscription" data-de="Premium-Abo">Premium obuna</h2>
+      <p data-uz="Cheklovsiz darslar, sertifikat va ko'proq!" data-en="Unlimited lessons, certificate & more!" data-de="Unbegrenzte Lektionen, Zertifikat & mehr!">Cheklovsiz darslar, sertifikat va ko'proq!</p>
+    </div>
+    <div class="modal-body">
+      <div class="plan-cards">
+        <div class="plan-card selected" onclick="selectPlan(this,'monthly')">
+          <h3 data-uz="Oylik" data-en="Monthly" data-de="Monatlich">Oylik</h3>
+          <div class="plan-price">$9<span data-uz="/oy" data-en="/mo" data-de="/Mo">/oy</span></div>
+          <ul class="plan-features">
+            <li data-uz="Barcha darslar" data-en="All lessons" data-de="Alle Lektionen">Barcha darslar</li>
+            <li data-uz="Flashcard cheksiz" data-en="Unlimited flashcards" data-de="Unbegrenzte Karteikarten">Flashcard cheksiz</li>
+            <li data-uz="Sertifikat" data-en="Certificate" data-de="Zertifikat">Sertifikat</li>
+          </ul>
+        </div>
+        <div class="plan-card" onclick="selectPlan(this,'yearly')">
+          <div class="plan-badge" data-uz="Eng foydali" data-en="Best Value" data-de="Bestes Angebot">Eng foydali</div>
+          <h3 data-uz="Yillik" data-en="Yearly" data-de="Jährlich">Yillik</h3>
+          <div class="plan-price">$59<span data-uz="/yil" data-en="/yr" data-de="/Jahr">/yil</span></div>
+          <ul class="plan-features">
+            <li data-uz="Hamma narsa oylikda" data-en="Everything in monthly" data-de="Alles aus Monatlich">Hamma narsa oylikda</li>
+            <li data-uz="AI suhbat mashqi" data-en="AI conversation practice" data-de="KI-Gesprächsübung">AI suhbat mashqi</li>
+            <li data-uz="Ustoz sessiyasi" data-en="Tutor session" data-de="Nachhilfestunde">Ustoz sessiyasi</li>
+          </ul>
+        </div>
+      </div>
+      <div class="payment-form">
+        <h4 data-uz="💳 To'lov ma'lumotlari" data-en="💳 Payment details" data-de="💳 Zahlungsdetails">💳 To'lov ma'lumotlari</h4>
+        <input class="pay-input" type="text" data-uz-placeholder="Karta raqami" data-en-placeholder="Card number" data-de-placeholder="Kartennummer" placeholder="Karta raqami">
+        <div class="pay-row">
+          <input class="pay-input" type="text" data-uz-placeholder="OY/YIL" data-en-placeholder="MM/YY" data-de-placeholder="MM/JJ" placeholder="OY/YIL">
+          <input class="pay-input" type="text" placeholder="CVV">
+        </div>
+        <input class="pay-input" type="text" data-uz-placeholder="Karta egasining ismi" data-en-placeholder="Cardholder name" data-de-placeholder="Karteninhaber" placeholder="Karta egasining ismi">
+        <button class="btn-pay" onclick="processPay()" data-uz="Hozir obuna bo'lish →" data-en="Subscribe Now →" data-de="Jetzt abonnieren →">Hozir obuna bo'lish →</button>
+        <div class="secure-note" data-uz="🔒 256-bit SSL himoyasi. Istalgan vaqt bekor qilish mumkin." data-en="🔒 256-bit SSL secured. Cancel anytime." data-de="🔒 256-Bit SSL gesichert. Jederzeit kündbar.">🔒 256-bit SSL himoyasi.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="page active">
+  <div class="login-left">
+    <div class="login-logo">
+      <div class="login-logo-icon">V</div>
+      <div class="login-logo-text">Vokab<span>.uz</span></div>
+    </div>
+    <div class="login-hero">
+      <h1 data-uz="Nemis tilini <em>professional</em> o'rgan" data-en="Learn German <em>professionally</em>" data-de="Deutsch <em>professionell</em> lernen">Nemis tilini <em>professional</em> o'rgan</h1>
+      <p data-uz="Vokab bilan — professional. A1 dan C2 gacha barcha darajalar bir platformada." data-en="With Vokab — professionally. All levels from A1 to C2 in one platform." data-de="Mit Vokab — professionell. Alle Niveaus von A1 bis C2 auf einer Plattform.">Vokab bilan — professional. A1 dan C2 gacha barcha darajalar bir platformada.</p>
+      <div class="login-levels">
+        <div class="level-badge">A1</div><div class="level-badge">A2</div>
+        <div class="level-badge">B1</div><div class="level-badge">B2</div>
+        <div class="level-badge">C1</div><div class="level-badge">C2</div>
+      </div>
+    </div>
+  </div>
+  <div class="login-right">
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('uz',this)">O'ZB</button>
+      <button class="lang-btn" onclick="setLang('en',this)">ENG</button>
+      <button class="lang-btn" onclick="setLang('de',this)">DEU</button>
+    </div>
+    <div class="login-form">
+      <h2 data-uz="Xush kelibsiz!" data-en="Welcome!" data-de="Willkommen!">Xush kelibsiz!</h2>
+      <p data-uz="Davom etish uchun tizimga kiring" data-en="Sign in to continue" data-de="Melden Sie sich an">Davom etish uchun tizimga kiring</p>
+
+      <!-- Google Login -->
+      <button class="btn-google" onclick="googleLogin()">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        <span data-uz="Google bilan kirish" data-en="Continue with Google" data-de="Mit Google anmelden">Google bilan kirish</span>
+      </button>
+
+      <div class="divider" data-uz="yoki" data-en="or" data-de="oder">yoki</div>
+
+      <div class="form-group">
+        <label data-uz="Email yoki telefon" data-en="Email or phone" data-de="E-Mail oder Telefon">Email yoki telefon</label>
+        <input type="text" id="loginEmail" placeholder="email@example.com">
+      </div>
+      <div class="form-group">
+        <label data-uz="Parol" data-en="Password" data-de="Passwort">Parol</label>
+        <input type="password" id="loginPass" placeholder="••••••••">
+      </div>
+      <div class="form-options">
+        <label class="remember"><input type="checkbox"> <span data-uz="Eslab qol" data-en="Remember me" data-de="Angemeldet bleiben">Eslab qol</span></label>
+        <a href="#" class="forgot" data-uz="Parolni unutdim?" data-en="Forgot password?" data-de="Passwort vergessen?">Parolni unutdim?</a>
+      </div>
+      <button class="btn-primary" onclick="goToPlatform()" data-uz="Kirish →" data-en="Sign In →" data-de="Einloggen →">Kirish →</button>
+      <div class="register-link">
+        <span data-uz="Akkaunt yo'qmi?" data-en="No account?" data-de="Kein Konto?">Akkaunt yo'qmi?</span>
+        <a href="#" data-uz="Ro'yxatdan o'ting" data-en="Register" data-de="Registrieren">Ro'yxatdan o'ting</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PLATFORM PAGE -->
+<div id="platformPage" class="page">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">V</div>
+      <div class="sidebar-logo-text">Vokab<span>.uz</span></div>
+    </div>
+    <div class="sidebar-user">
+      <div class="user-avatar">XQ<span class="premium-crown">👑</span></div>
+      <div class="user-info">
+        <div class="user-name">Xurshid Q.</div>
+        <div class="user-level">⭐ A2 <span data-uz="daraja" data-en="level" data-de="Niveau">daraja</span></div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title" data-uz="Asosiy" data-en="Main" data-de="Hauptmenü">Asosiy</div>
+      <div class="nav-item active" onclick="showSection('dashboard',this)">
+        <span class="nav-icon">🏠</span> <span data-uz="Bosh sahifa" data-en="Dashboard" data-de="Startseite">Bosh sahifa</span>
+      </div>
+      <div class="nav-item" onclick="showSection('levels',this)">
+        <span class="nav-icon">📊</span> <span data-uz="Darajalar" data-en="Levels" data-de="Niveaus">Darajalar</span>
+      </div>
+      <div class="nav-item" onclick="showSection('lessons',this)">
+        <span class="nav-icon">📖</span> <span data-uz="Darslar" data-en="Lessons" data-de="Lektionen">Darslar</span>
+        <span class="nav-badge">3</span>
+      </div>
+      <div class="nav-section-title" style="margin-top:8px" data-uz="O'rganish" data-en="Learning" data-de="Lernen">O'rganish</div>
+      <div class="nav-item" onclick="showSection('vocabulary',this)">
+        <span class="nav-icon">🔤</span> <span data-uz="Lug'at" data-en="Vocabulary" data-de="Wortschatz">Lug'at</span>
+      </div>
+      <div class="nav-item" onclick="showSection('flashcards',this)">
+        <span class="nav-icon">🃏</span> <span data-uz="Flashcard" data-en="Flashcards" data-de="Karteikarten">Flashcard</span>
+      </div>
+      <div class="nav-item" onclick="showSection('grammar',this)">
+        <span class="nav-icon">📝</span> <span data-uz="Grammatika" data-en="Grammar" data-de="Grammatik">Grammatika</span>
+      </div>
+      <div class="nav-item" onclick="showSection('tests',this)">
+        <span class="nav-icon">✅</span> <span data-uz="Testlar" data-en="Tests" data-de="Tests">Testlar</span>
+      </div>
+      <div class="nav-item" onclick="showSection('certificate',this)">
+        <span class="nav-icon">🏆</span> <span data-uz="Sertifikat" data-en="Certificate" data-de="Zertifikat">Sertifikat</span>
+      </div>
+      <div class="nav-section-title" style="margin-top:8px" data-uz="Shaxsiy" data-en="Personal" data-de="Persönlich">Shaxsiy</div>
+      <div class="nav-item" onclick="showSection('profile',this)">
+        <span class="nav-icon">👤</span> <span data-uz="Profil" data-en="Profile" data-de="Profil">Profil</span>
+      </div>
+      <div class="nav-item" onclick="showSection('settings',this)">
+        <span class="nav-icon">⚙️</span> <span data-uz="Sozlamalar" data-en="Settings" data-de="Einstellungen">Sozlamalar</span>
+      </div>
+    
+<div class="nav-item" onclick="showSection('aichat',this)"><span class="nav-icon">🤖</span> AI Chat</div>
+
+</nav>
+    <div class="sidebar-bottom">
+      <button class="logout-btn" onclick="logout()">
+        <span>🚪</span> <span data-uz="Chiqish" data-en="Sign Out" data-de="Abmelden">Chiqish</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Bosh sahifa</div>
+      <div class="topbar-lang">
+        <button class="active" onclick="setLang('uz',this)">O'ZB</button>
+        <button onclick="setLang('en',this)">ENG</button>
+        <button onclick="setLang('de',this)">DEU</button>
+      </div>
+      <button class="notif-btn" onclick="showProgressNotif()" title="Bildirishnomalar">
+        🔔<span class="notif-dot"></span>
+      </button>
+      <button class="dark-toggle" onclick="toggleDark()" title="Dark mode"></button>
+      <div class="xp-badge">⚡ 1,240 XP</div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="content-section active">
+      <div class="welcome-banner">
+        <h2><span data-uz="Salom," data-en="Hello," data-de="Hallo,">Salom,</span> <span style="color:var(--gold)">Xurshid!</span> 👋</h2>
+        <p data-uz="Bugun ham bir qadam oldinga — davom eting!" data-en="One more step forward today — keep going!" data-de="Heute wieder einen Schritt vorwärts!">Bugun ham bir qadam oldinga — davom eting!</p>
+        <button class="btn-gold" onclick="showSection('lessons',null)" data-uz="▶ Darsni davom eting" data-en="▶ Continue Lesson" data-de="▶ Lektion fortsetzen">▶ Darsni davom eting</button>
+      </div>
+
+      <!-- Premium Banner (free user) -->
+      <div class="premium-banner" id="premiumBanner">
+        <div class="pb-icon">👑</div>
+        <div class="pb-info">
+          <h3 data-uz="Premium ga o'ting — barcha imkoniyatlar" data-en="Go Premium — unlock everything" data-de="Premium werden — alles freischalten">Premium ga o'ting — barcha imkoniyatlar</h3>
+          <p data-uz="Sertifikat, AI mashq, cheksiz flashcard va ko'proq" data-en="Certificate, AI practice, unlimited flashcards & more" data-de="Zertifikat, KI-Übung, unbegrenzte Karteikarten & mehr">Sertifikat, AI mashq, cheksiz flashcard va ko'proq</p>
+        </div>
+        <button class="btn-upgrade" onclick="openPayment()" data-uz="Upgrade →" data-en="Upgrade →" data-de="Upgrade →">Upgrade →</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label" data-uz="Kunlik seriya" data-en="Daily Streak" data-de="Tages-Streak">Kunlik seriya</div>
+          <div class="stat-value">12🔥</div>
+          <div class="stat-sub" data-uz="kun ketma-ket" data-en="days in a row" data-de="Tage hintereinander">kun ketma-ket</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label" data-uz="O'rganilgan so'zlar" data-en="Words Learned" data-de="Gelernte Wörter">O'rganilgan so'zlar</div>
+          <div class="stat-value">347</div>
+          <div class="stat-sub" data-uz="+18 bu hafta" data-en="+18 this week" data-de="+18 diese Woche">+18 bu hafta</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label" data-uz="Tugatilgan darslar" data-en="Completed Lessons" data-de="Abgeschlossene Lektionen">Tugatilgan darslar</div>
+          <div class="stat-value">24</div>
+          <div class="stat-sub">A1 + A2</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">XP</div>
+          <div class="stat-value">1,240</div>
+          <div class="stat-sub">Top 15%</div>
+        </div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="card">
+          <div class="card-title">📖 <span data-uz="Davom etish" data-en="Continue" data-de="Weitermachen">Davom etish</span></div>
+          <div class="continue-lesson" onclick="showSection('lessons',null)">
+            <div class="lesson-icon">🗣️</div>
+            <div class="lesson-info">
+              <div class="lesson-name" data-uz="A2 — Dars 5: Suhbat va dialog" data-en="A2 — Lesson 5: Conversation & Dialog" data-de="A2 — Lektion 5: Gespräch und Dialog">A2 — Dars 5: Suhbat va dialog</div>
+              <div class="lesson-meta" data-uz="Grammatika · 15 daqiqa qoldi" data-en="Grammar · 15 min left" data-de="Grammatik · 15 Minuten übrig">Grammatika · 15 daqiqa qoldi</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div>
+            </div>
+            <span style="font-size:20px;color:var(--gray-400)">›</span>
+          </div>
+          <div class="continue-lesson" onclick="showSection('flashcards',null)">
+            <div class="lesson-icon">🃏</div>
+            <div class="lesson-info">
+              <div class="lesson-name" data-uz="Flashcard — Kundalik hayot" data-en="Flashcards — Daily Life" data-de="Karteikarten — Alltag">Flashcard — Kundalik hayot</div>
+              <div class="lesson-meta" data-uz="20 so'z qoldi" data-en="20 words left" data-de="20 Wörter übrig">20 so'z qoldi</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:40%"></div></div>
+            </div>
+            <span style="font-size:20px;color:var(--gray-400)">›</span>
+          </div>
+        </div>
+        <div>
+          <div class="card streak-card">
+            <div class="card-title" style="justify-content:center">🔥 <span data-uz="Seriya" data-en="Streak" data-de="Streak">Seriya</span></div>
+            <div class="streak-number">12</div>
+            <div class="streak-label" data-uz="kun ketma-ket o'rgandingiz!" data-en="days learning in a row!" data-de="Tage hintereinander gelernt!">kun ketma-ket o'rgandingiz!</div>
+            <div class="streak-days">
+              <div class="day-dot done" data-uz="Du" data-en="Mo" data-de="Mo">Du</div>
+              <div class="day-dot done" data-uz="Se" data-en="Tu" data-de="Di">Se</div>
+              <div class="day-dot done" data-uz="Ch" data-en="We" data-de="Mi">Ch</div>
+              <div class="day-dot done" data-uz="Pa" data-en="Th" data-de="Do">Pa</div>
+              <div class="day-dot today" data-uz="Ju" data-en="Fr" data-de="Fr">Ju</div>
+              <div class="day-dot" data-uz="Sh" data-en="Sa" data-de="Sa">Sh</div>
+              <div class="day-dot" data-uz="Ya" data-en="Su" data-de="So">Ya</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEVELS -->
+    <div id="levels" class="content-section">
+      <div class="levels-header">
+        <button class="level-filter active" data-uz="Barchasi" data-en="All" data-de="Alle">Barchasi</button>
+        <button class="level-filter" data-uz="Boshlang'ich" data-en="Beginner" data-de="Anfänger">Boshlang'ich</button>
+        <button class="level-filter" data-uz="O'rta" data-en="Intermediate" data-de="Mittelstufe">O'rta</button>
+        <button class="level-filter" data-uz="Yuqori" data-en="Advanced" data-de="Fortgeschritten">Yuqori</button>
+      </div>
+      <div class="levels-grid">
+        <div class="level-card" onclick="showSection('lessons',null)">
+          <div class="level-card-header a1"><div class="level-tag">A1</div><div class="level-status active" data-uz="✓ Bajarildi" data-en="✓ Completed" data-de="✓ Abgeschlossen">✓ Bajarildi</div></div>
+          <div class="level-card-body">
+            <div class="level-card-name" data-uz="Boshlang'ich daraja" data-en="Beginner Level" data-de="Anfängerniveau">Boshlang'ich daraja</div>
+            <div class="level-card-desc" data-uz="Asosiy so'zlar, salomlashish" data-en="Basic words, greetings" data-de="Grundwortschatz, Begrüßung">Asosiy so'zlar</div>
+            <div class="level-progress"><div class="level-progress-label"><span data-uz="Taraqqiyot" data-en="Progress" data-de="Fortschritt">Taraqqiyot</span><span>100%</span></div><div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div></div>
+            <div class="level-topics"><span class="topic-tag">Salomlashish</span><span class="topic-tag">Raqamlar</span><span class="topic-tag">Ranglar</span></div>
+          </div>
+        </div>
+        <div class="level-card" onclick="showSection('lessons',null)">
+          <div class="level-card-header a2"><div class="level-tag">A2</div><div class="level-status active" data-uz="Faol" data-en="Active" data-de="Aktiv">Faol</div></div>
+          <div class="level-card-body">
+            <div class="level-card-name" data-uz="Elementar daraja" data-en="Elementary Level" data-de="Elementarniveau">Elementar daraja</div>
+            <div class="level-card-desc" data-uz="Kundalik suhbat, oila, ish" data-en="Daily talk, family, work" data-de="Alltag, Familie, Arbeit">Kundalik suhbat</div>
+            <div class="level-progress"><div class="level-progress-label"><span data-uz="Taraqqiyot" data-en="Progress" data-de="Fortschritt">Taraqqiyot</span><span>65%</span></div><div class="progress-bar"><div class="progress-fill" style="width:65%"></div></div></div>
+            <div class="level-topics"><span class="topic-tag">Oila</span><span class="topic-tag">Ish</span><span class="topic-tag">Sayohat</span></div>
+          </div>
+        </div>
+        <div class="level-card">
+          <div class="level-card-header b1"><div class="level-tag">B1</div><div class="level-status locked" data-uz="🔒 Yopiq" data-en="🔒 Locked" data-de="🔒 Gesperrt">🔒 Yopiq</div></div>
+          <div class="level-card-body">
+            <div class="level-card-name" data-uz="O'rta daraja" data-en="Intermediate Level" data-de="Mittelstufe">O'rta daraja</div>
+            <div class="level-card-desc" data-uz="Murakkab jumlalar" data-en="Complex sentences" data-de="Komplexe Sätze">Murakkab jumlalar</div>
+            <div class="level-progress"><div class="level-progress-label"><span>0%</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div>
+            <div class="level-topics"><span class="topic-tag">Fikr</span><span class="topic-tag">Muloqot</span></div>
+          </div>
+        </div>
+        <div class="level-card">
+          <div class="level-card-header b2"><div class="level-tag">B2</div><div class="level-status locked">🔒</div></div>
+          <div class="level-card-body">
+            <div class="level-card-name" data-uz="O'rta-yuqori" data-en="Upper Intermediate" data-de="Obere Mittelstufe">O'rta-yuqori</div>
+            <div class="level-card-desc" data-uz="Erkin muloqot" data-en="Free communication" data-de="Freie Kommunikation">Erkin muloqot</div>
+            <div class="level-progress"><div class="level-progress-label"><span>0%</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div>
+            <div class="level-topics"><span class="topic-tag">Biznes</span><span class="topic-tag">Jamiyat</span></div>
+          </div>
+        </div>
+        <div class="level-card">
+          <div class="level-card-header c1"><div class="level-tag">C1</div><div class="level-status locked">🔒</div></div>
+          <div class="level-card-body">
+            <div class="level-card-name" data-uz="Ilg'or daraja" data-en="Advanced Level" data-de="Fortgeschrittenes Niveau">Ilg'or daraja</div>
+            <div class="level-card-desc" data-uz="Akademik til" data-en="Academic language" data-de="Akademische Sprache">Akademik til</div>
+            <div class="level-progress"><div class="level-progress-label"><span>0%</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div>
+            <div class="level-topics"><span class="topic-tag">Akademik</span><span class="topic-tag">Professional</span></div>
+          </div>
+        </div>
+        <div class="level-card">
+          <div class="level-card-header c2"><div class="level-tag">C2</div><div class="level-status locked">🔒</div></div>
+          <div class="level-card-body">
+            <div class="level-card-name" data-uz="Ustoz daraja" data-en="Mastery Level" data-de="Meisterniveau">Ustoz daraja</div>
+            <div class="level-card-desc" data-uz="Ona tili darajasi" data-en="Native level" data-de="Muttersprachniveau">Ona tili darajasi</div>
+            <div class="level-progress"><div class="level-progress-label"><span>0%</span></div><div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div></div>
+            <div class="level-topics"><span class="topic-tag">Adabiyot</span><span class="topic-tag">San'at</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LESSONS -->
+    <div id="lessons" class="content-section">
+      <div style="margin-bottom:20px;display:flex;gap:10px;align-items:center">
+        <div style="font-size:13px;color:var(--gray-400)" data-uz="Daraja:" data-en="Level:" data-de="Niveau:">Daraja:</div>
+        <div style="padding:6px 16px;background:var(--navy);color:white;border-radius:8px;font-size:13px;font-weight:600" data-uz="A2 — Elementar" data-en="A2 — Elementary" data-de="A2 — Elementar">A2 — Elementar</div>
+      </div>
+      <div class="lessons-list">
+        <div class="lesson-row">
+          <div class="lesson-number done">✓</div>
+          <div class="lesson-row-info">
+            <div class="lesson-row-name" data-uz="Dars 1 — Salomlashish va tanishish" data-en="Lesson 1 — Greetings & Introduction" data-de="Lektion 1 — Begrüßung und Vorstellung">Dars 1 — Salomlashish</div>
+            <div class="lesson-row-meta"><span>⏱ 20 min</span><span>📚 15 so'z</span></div>
+          </div>
+          <div class="lesson-row-right"><div class="lesson-xp">+50 XP</div><button class="lesson-action" data-uz="Takrorlash" data-en="Repeat" data-de="Wiederholen">Takrorlash</button></div>
+        </div>
+        <div class="lesson-row">
+          <div class="lesson-number done">✓</div>
+          <div class="lesson-row-info">
+            <div class="lesson-row-name" data-uz="Dars 2 — Oila va qarindoshlar" data-en="Lesson 2 — Family & Relatives" data-de="Lektion 2 — Familie und Verwandte">Dars 2 — Oila</div>
+            <div class="lesson-row-meta"><span>⏱ 25 min</span><span>📚 20 so'z</span></div>
+          </div>
+          <div class="lesson-row-right"><div class="lesson-xp">+60 XP</div><button class="lesson-action" data-uz="Takrorlash" data-en="Repeat" data-de="Wiederholen">Takrorlash</button></div>
+        </div>
+        <div class="lesson-row">
+          <div class="lesson-number done">✓</div>
+          <div class="lesson-row-info">
+            <div class="lesson-row-name" data-uz="Dars 3 — Ish va kasb" data-en="Lesson 3 — Work & Profession" data-de="Lektion 3 — Arbeit und Beruf">Dars 3 — Ish va kasb</div>
+            <div class="lesson-row-meta"><span>⏱ 30 min</span><span>📚 25 so'z</span></div>
+          </div>
+          <div class="lesson-row-right"><div class="lesson-xp">+70 XP</div><button class="lesson-action" data-uz="Takrorlash" data-en="Repeat" data-de="Wiederholen">Takrorlash</button></div>
+        </div>
+        <div class="lesson-row" style="border-color:var(--gold);background:linear-gradient(to right,var(--card-bg),rgba(245,166,35,0.06))">
+          <div class="lesson-number" style="background:var(--gold);color:var(--navy-dark)">4</div>
+          <div class="lesson-row-info">
+            <div class="lesson-row-name" data-uz="Dars 4 — Do'kon va xarid 🔥" data-en="Lesson 4 — Shopping 🔥" data-de="Lektion 4 — Einkaufen 🔥">Dars 4 — Do'kon 🔥</div>
+            <div class="lesson-row-meta"><span>⏱ 25 min</span><span>📚 22 so'z</span></div>
+            <div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:65%"></div></div>
+          </div>
+          <div class="lesson-row-right"><div class="lesson-xp">+65 XP</div><button class="lesson-action" data-uz="Davom etish" data-en="Continue" data-de="Weiter">Davom etish</button></div>
+        </div>
+        <div class="lesson-row">
+          <div class="lesson-number locked">5</div>
+          <div class="lesson-row-info">
+            <div class="lesson-row-name" data-uz="Dars 5 — Suhbat va dialog" data-en="Lesson 5 — Conversation" data-de="Lektion 5 — Gespräch">Dars 5 — Suhbat</div>
+            <div class="lesson-row-meta"><span>⏱ 35 min</span><span>📚 28 so'z</span></div>
+          </div>
+          <div class="lesson-row-right"><div class="lesson-xp" style="background:var(--gray-200);color:var(--gray-400)">+80 XP</div><button class="lesson-action locked" disabled data-uz="🔒 Yopiq" data-en="🔒 Locked" data-de="🔒 Gesperrt">🔒 Yopiq</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VOCABULARY -->
+    <div id="vocabulary" class="content-section">
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title">🔤 <span data-uz="Bugungi lug'at mashqi" data-en="Today's vocabulary" data-de="Heutige Wortübung">Bugungi lug'at mashqi</span></div>
+        <div class="vocab-word-area">
+          <div class="vocab-word-label" data-uz="Nemischa so'z:" data-en="German word:" data-de="Deutsches Wort:">Nemischa so'z:</div>
+          <div class="vocab-big-word" id="vocabWord">Haus</div>
+          <div class="vocab-phonetic" id="vocabPhonetic">[ haʊs ]</div>
+          <button class="audio-btn" id="audioBtn" onclick="playAudio()">
+            🔊 <span data-uz="Talaffuzni eshiting" data-en="Listen to pronunciation" data-de="Aussprache anhören">Talaffuzni eshiting</span>
+          </button>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:0 20px 20px">
+          <button onclick="checkVocab(this,'correct')" style="padding:12px 28px;border-radius:10px;border:2px solid var(--border);background:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text)" data-uz="Uy" data-en="House" data-de="Haus (richtig)">Uy</button>
+          <button onclick="checkVocab(this,'wrong')" style="padding:12px 28px;border-radius:10px;border:2px solid var(--border);background:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text)" data-uz="Mashina" data-en="Car" data-de="Auto">Mashina</button>
+          <button onclick="checkVocab(this,'wrong')" style="padding:12px 28px;border-radius:10px;border:2px solid var(--border);background:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text)" data-uz="Kitob" data-en="Book" data-de="Buch">Kitob</button>
+          <button onclick="checkVocab(this,'wrong')" style="padding:12px 28px;border-radius:10px;border:2px solid var(--border);background:none;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--text)" data-uz="Maktab" data-en="School" data-de="Schule">Maktab</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLASHCARDS -->
+    <div id="flashcards" class="content-section">
+      <div class="card-title" style="margin-bottom:20px">🃏 <span data-uz="Flashcard mashqi" data-en="Flashcard Practice" data-de="Karteikarten-Übung">Flashcard mashqi</span></div>
+      <div class="fc-progress">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:var(--gray-400);margin-bottom:6px">
+          <span id="fcProgressLabel" data-uz="3 / 8 karta" data-en="3 / 8 cards" data-de="3 / 8 Karten">3 / 8 karta</span>
+          <span id="fcPercent">37%</span>
+        </div>
+        <div class="fc-progress-bar"><div class="fc-progress-fill" id="fcBar" style="width:37%"></div></div>
+      </div>
+      <div class="flashcard-container">
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+          <div class="flashcard-face flashcard-front">
+            <div class="flashcard-hint" data-uz="Bosing — tarjimani ko'ring" data-en="Click to see translation" data-de="Klicken für Übersetzung">Bosing — tarjimani ko'ring</div>
+            <div class="flashcard-word" id="fcWord">Wasser</div>
+            <div class="flashcard-phonetic" id="fcPhonetic">[ ˈvasɐ ]</div>
+            <button onclick="event.stopPropagation();playFlashcardAudio()" style="margin-top:12px;padding:8px 18px;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);color:white;border-radius:20px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">🔊 Audio</button>
+          </div>
+          <div class="flashcard-face flashcard-back">
+            <div class="flashcard-hint" data-uz="Tarjima:" data-en="Translation:" data-de="Übersetzung:">Tarjima:</div>
+            <div class="flashcard-translation" id="fcTranslation">Suv</div>
+            <div class="flashcard-example" id="fcExample">Das Wasser ist kalt.<br><em style="opacity:0.7">Suv sovuq.</em></div>
+          </div>
+        </div>
+      </div>
+      <div class="flashcard-controls">
+        <button class="fc-btn wrong" onclick="fcAnswer(false)" data-uz="❌ Bilmadim" data-en="❌ Don't know" data-de="❌ Weiß nicht">❌ Bilmadim</button>
+        <span class="fc-counter" id="fcCounter">3/8</span>
+        <button class="fc-btn right" onclick="fcAnswer(true)" data-uz="✓ Bildim!" data-en="✓ I know!" data-de="✓ Weiß ich!">✓ Bildim!</button>
+      </div>
+      <div class="fc-stats">
+        <div class="fc-stat"><div class="val" id="fcRight" style="color:var(--success)">2</div><div class="lbl" data-uz="To'g'ri" data-en="Correct" data-de="Richtig">To'g'ri</div></div>
+        <div class="fc-stat"><div class="val" id="fcWrong" style="color:#e74c3c">1</div><div class="lbl" data-uz="Noto'g'ri" data-en="Wrong" data-de="Falsch">Noto'g'ri</div></div>
+        <div class="fc-stat"><div class="val" id="fcRemain" style="color:var(--gold)">5</div><div class="lbl" data-uz="Qoldi" data-en="Remaining" data-de="Verbleibend">Qoldi</div></div>
+      </div>
+    </div>
+
+    <!-- GRAMMAR -->
+    <div id="grammar" class="content-section">
+      <div class="card">
+        <div class="card-title">📝 <span data-uz="Grammatika — A2 daraja" data-en="Grammar — A2 Level" data-de="Grammatik — A2 Niveau">Grammatika — A2 daraja</span></div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="padding:16px 20px;border-radius:10px;background:var(--off-white);border-left:4px solid var(--gold)">
+            <div style="font-weight:700;color:var(--text);margin-bottom:4px">Artikel — der, die, das</div>
+            <div style="font-size:13px;color:var(--gray-600)" data-uz="Nemis tilida 3 xil artikl mavjud." data-en="German has 3 types of articles." data-de="Im Deutschen gibt es 3 Artikel.">Nemis tilida 3 xil artikl mavjud.</div>
+          </div>
+          <div style="padding:16px 20px;border-radius:10px;background:var(--off-white);border-left:4px solid #3498db">
+            <div style="font-weight:700;color:var(--text);margin-bottom:4px">Verbkonjugation — Präsens</div>
+            <div style="font-size:13px;color:var(--gray-600)" data-uz="Hozirgi zamon fe'l shakllarini o'rganamiz." data-en="We learn present tense verb forms." data-de="Wir lernen die Gegenwartsformen der Verben.">Hozirgi zamon fe'l shakllarini o'rganamiz.</div>
+          </div>
+          <div style="padding:16px 20px;border-radius:10px;background:var(--off-white);border-left:4px solid var(--success)">
+            <div style="font-weight:700;color:var(--text);margin-bottom:4px">Pluralformen</div>
+            <div style="font-size:13px;color:var(--gray-600)" data-uz="Otlarning ko'plik shakllarini hosil qilish." data-en="Forming plural forms of nouns." data-de="Pluralformen der Substantive bilden.">Otlarning ko'plik shakllarini hosil qilish.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TESTS -->
+    <div id="tests" class="content-section">
+      <div class="card">
+        <div class="card-title">✅ <span data-uz="Testlar" data-en="Tests" data-de="Tests">Testlar</span></div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="padding:20px;border-radius:12px;background:var(--off-white);display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700;color:var(--text)" data-uz="A1 Yakuniy test" data-en="A1 Final Test" data-de="A1 Abschlusstest">A1 Yakuniy test</div>
+              <div style="font-size:12px;color:var(--success);font-weight:600">✓ 94/100</div>
+            </div>
+            <button style="padding:8px 20px;background:var(--success);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" data-uz="Natija" data-en="Results" data-de="Ergebnis" onclick="showToast('📊','A1 test natijasi: 94/100 — Ajoyib!','success')">Natija</button>
+          </div>
+          <div style="padding:20px;border-radius:12px;background:linear-gradient(to right,var(--card-bg),rgba(245,166,35,0.06));border:2px solid var(--gold);display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:700;color:var(--text)" data-uz="A2 Yakuniy test" data-en="A2 Final Test" data-de="A2 Abschlusstest">A2 Yakuniy test</div>
+              <div style="font-size:12px;color:var(--gold);font-weight:600" data-uz="⏳ Tayyor emas" data-en="⏳ Not ready yet" data-de="⏳ Noch nicht bereit">⏳ Tayyor emas</div>
+            </div>
+            <button style="padding:8px 20px;background:var(--navy);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer" data-uz="Boshlash" data-en="Start" data-de="Starten" onclick="showToast('⚠️','A2 testni boshlash uchun avval barcha darslarni tugatng!','warning')">Boshlash</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CERTIFICATE -->
+    <div id="certificate" class="content-section">
+      <!-- Earned Certificate -->
+      <div class="cert-card" id="certA1">
+        <div class="cert-header">
+          <div class="cert-logo">🏆</div>
+          <div class="cert-title" data-uz="RASMIY SERTIFIKAT" data-en="OFFICIAL CERTIFICATE" data-de="OFFIZIELLES ZERTIFIKAT">RASMIY SERTIFIKAT</div>
+          <div class="cert-name">Xurshid Qurbonaliyev</div>
+          <div class="cert-sub" data-uz="quyidagi darajani muvaffaqiyatli tugatdi" data-en="has successfully completed the level" data-de="hat das Niveau erfolgreich abgeschlossen">quyidagi darajani muvaffaqiyatli tugatdi</div>
+        </div>
+        <div class="cert-body" style="text-align:center">
+          <div style="margin-bottom:16px"><span class="cert-level-badge">A1</span></div>
+          <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px" data-uz="Boshlang'ich daraja — Nemis tili" data-en="Beginner Level — German" data-de="Anfängerniveau — Deutsch">Boshlang'ich daraja — Nemis tili</div>
+          <div style="font-size:13px;color:var(--gray-400);margin-bottom:24px" data-uz="Mart 2025 da yakunlandi" data-en="Completed in March 2025" data-de="Abgeschlossen im März 2025">Mart 2025 da yakunlandi</div>
+          <div class="cert-details">
+            <div class="cert-detail"><div class="cd-val">94%</div><div class="cd-lbl" data-uz="Ball" data-en="Score" data-de="Punktzahl">Ball</div></div>
+            <div class="cert-detail"><div class="cd-val">24</div><div class="cd-lbl" data-uz="Darslar" data-en="Lessons" data-de="Lektionen">Darslar</div></div>
+            <div class="cert-detail"><div class="cd-val">48h</div><div class="cd-lbl" data-uz="Vaqt" data-en="Time" data-de="Zeit">Vaqt</div></div>
+          </div>
+          <button class="btn-download" onclick="showToast('📥','Sertifikat yuklab olindi!','success')">📥 <span data-uz="PDF yuklab olish" data-en="Download PDF" data-de="PDF herunterladen">PDF yuklab olish</span></button>
+        </div>
+      </div>
+
+      <!-- Locked A2 Certificate -->
+      <div class="cert-card" id="certA2Locked">
+        <div class="cert-header">
+          <div class="cert-logo">🔒</div>
+          <div class="cert-title">A2</div>
+          <div class="cert-name" data-uz="Sertifikat — Yopiq" data-en="Certificate — Locked" data-de="Zertifikat — Gesperrt">Sertifikat — Yopiq</div>
+          <div class="cert-sub" data-uz="A2 testini topshiring va sertifikat oling" data-en="Pass the A2 test to earn your certificate" data-de="Bestehen Sie den A2-Test für Ihr Zertifikat">A2 testini topshiring</div>
+        </div>
+        <div class="cert-body">
+          <div class="cert-locked-overlay">
+            <div style="font-size:48px;margin-bottom:12px">🎯</div>
+            <h3 data-uz="A2 sertifikatini qoʻlga kiriting!" data-en="Earn your A2 Certificate!" data-de="Holen Sie sich Ihr A2-Zertifikat!">A2 sertifikatini qo'lga kiriting!</h3>
+            <p data-uz="65% bajarildi — yana 35% qoldi. Premium obuna bilan sertifikat olish imkoniyatini faollashtiring." data-en="65% done — 35% remaining. Activate certificate access with Premium." data-de="65% erledigt — 35% verbleibend. Aktivieren Sie den Zertifikatszugang mit Premium.">65% bajarildi — yana 35% qoldi.</p>
+            <div class="progress-bar" style="max-width:300px;margin:0 auto 20px;height:10px;border-radius:5px"><div class="progress-fill" style="width:65%"></div></div>
+            <button class="btn-upgrade" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;padding:12px 28px;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif" onclick="openPayment()" data-uz="👑 Premium — Sertifikat oling" data-en="👑 Premium — Get Certificate" data-de="👑 Premium — Zertifikat erhalten">👑 Premium — Sertifikat oling</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE -->
+    <div id="profile" class="content-section">
+      <div class="profile-header">
+        <div class="profile-avatar">XQ<span class="profile-premium-badge">PRO</span></div>
+        <div class="profile-info">
+          <h2>Xurshid Qurbonaliyev</h2>
+          <p>xurshid@example.com</p>
+          <p style="margin-top:6px" data-uz="🗓 A'zo bo'lgan: Yanvar 2025" data-en="🗓 Member since: January 2025" data-de="🗓 Mitglied seit: Januar 2025">🗓 A'zo bo'lgan: Yanvar 2025</p>
+        </div>
+        <div class="profile-level-badge">A2</div>
+      </div>
+      <div class="profile-grid">
+        <div class="card">
+          <div class="card-title">🏆 <span data-uz="Yutuqlar" data-en="Achievements" data-de="Erfolge">Yutuqlar</span></div>
+          <div class="achievements">
+            <div class="achievement"><div class="achievement-icon">🔥</div><div class="achievement-name" data-uz="7 kunlik seriya" data-en="7-day streak" data-de="7-Tage-Streak">7 kunlik seriya</div></div>
+            <div class="achievement"><div class="achievement-icon">📚</div><div class="achievement-name" data-uz="100 so'z" data-en="100 words" data-de="100 Wörter">100 so'z</div></div>
+            <div class="achievement"><div class="achievement-icon">⭐</div><div class="achievement-name" data-uz="A1 ustozi" data-en="A1 Master" data-de="A1-Meister">A1 ustozi</div></div>
+            <div class="achievement locked"><div class="achievement-icon">🎯</div><div class="achievement-name" data-uz="300 so'z" data-en="300 words" data-de="300 Wörter">300 so'z</div></div>
+            <div class="achievement locked"><div class="achievement-icon">🏅</div><div class="achievement-name" data-uz="B1 daraja" data-en="B1 Level" data-de="B1-Niveau">B1 daraja</div></div>
+            <div class="achievement locked"><div class="achievement-icon">👑</div><div class="achievement-name" data-uz="C2 ustozi" data-en="C2 Master" data-de="C2-Meister">C2 ustozi</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📊 <span data-uz="Statistika" data-en="Statistics" data-de="Statistik">Statistika</span></div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--border)">
+              <span style="font-size:14px;color:var(--gray-600)" data-uz="Jami o'rganish vaqti" data-en="Total learning time" data-de="Gesamte Lernzeit">Jami vaqt</span>
+              <span style="font-weight:700;color:var(--text)" data-uz="48 soat" data-en="48 hours" data-de="48 Stunden">48 soat</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding-bottom:14px;border-bottom:1px solid var(--border)">
+              <span style="font-size:14px;color:var(--gray-600)" data-uz="O'rganilgan so'zlar" data-en="Words learned" data-de="Gelernte Wörter">So'zlar</span>
+              <span style="font-weight:700;color:var(--text)">347</span>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+              <span style="font-size:14px;color:var(--gray-600)" data-uz="Eng uzun seriya" data-en="Longest streak" data-de="Längster Streak">Eng uzun seriya</span>
+              <span style="font-weight:700;color:var(--gold)">🔥 18</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings" class="content-section">
+      <div class="card">
+        <div class="card-title">⚙️ <span data-uz="Sozlamalar" data-en="Settings" data-de="Einstellungen">Sozlamalar</span></div>
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <!-- Language -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-weight:600;color:var(--text)" data-uz="Interfeys tili" data-en="Interface language" data-de="Oberflächensprache">Interfeys tili</div>
+              <div style="font-size:12px;color:var(--gray-400)" data-uz="Platforma ko'rsatiladigan til" data-en="Display language of the platform" data-de="Anzeigesprache der Plattform">Platforma tili</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button id="settingsUzBtn" style="padding:6px 12px;border-radius:8px;border:2px solid var(--navy);background:var(--navy);color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif" onclick="setLang('uz',null)">O'ZB</button>
+              <button id="settingsEnBtn" style="padding:6px 12px;border-radius:8px;border:2px solid var(--border);background:none;font-size:12px;font-weight:600;cursor:pointer;color:var(--gray-600);font-family:'DM Sans',sans-serif" onclick="setLang('en',null)">ENG</button>
+              <button id="settingsDeBtn" style="padding:6px 12px;border-radius:8px;border:2px solid var(--border);background:none;font-size:12px;font-weight:600;cursor:pointer;color:var(--gray-600);font-family:'DM Sans',sans-serif" onclick="setLang('de',null)">DEU</button>
+            </div>
+          </div>
+          <!-- Dark Mode -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-weight:600;color:var(--text)" data-uz="Qorong'u rejim" data-en="Dark Mode" data-de="Dunkelmodus">Qorong'u rejim</div>
+              <div style="font-size:12px;color:var(--gray-400)" data-uz="Ko'zga qulay qorong'u interfeys" data-en="Eye-friendly dark interface" data-de="Augenfreundliche dunkle Oberfläche">Ko'zga qulay rejim</div>
+            </div>
+            <button class="dark-toggle" onclick="toggleDark()" style="transform:scale(1.2)"></button>
+          </div>
+          <!-- Notifications -->
+          <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:20px;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-weight:600;color:var(--text)" data-uz="Bildirishnomalar" data-en="Notifications" data-de="Benachrichtigungen">Bildirishnomalar</div>
+              <div style="font-size:12px;color:var(--gray-400)" data-uz="Progress va seriya eslatmalari" data-en="Progress & streak reminders" data-de="Fortschritts- und Streak-Erinnerungen">Progress va seriya eslatmalari</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:46px;height:26px">
+              <input type="checkbox" checked id="notifToggle" style="opacity:0;width:0;height:0">
+              <span onclick="toggleNotif()" style="position:absolute;inset:0;background:var(--success);border-radius:13px;cursor:pointer;transition:0.3s"></span>
+              <span id="notifDot" style="position:absolute;left:4px;top:4px;width:18px;height:18px;background:white;border-radius:50%;transition:0.3s;transform:translateX(20px)"></span>
+            </label>
+          </div>
+          <!-- Daily goal -->
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:600;color:var(--text)" data-uz="Kunlik maqsad" data-en="Daily goal" data-de="Tagesziel">Kunlik maqsad</div>
+              <div style="font-size:12px;color:var(--gray-400)" data-uz="Kuniga o'rganish vaqti" data-en="Daily learning time" data-de="Tägliche Lernzeit">O'rganish vaqti</div>
+            </div>
+            <select style="padding:8px 14px;border-radius:8px;border:2px solid var(--border);font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:var(--card-bg)">
+              <option>10 min</option>
+              <option selected>20 min</option>
+              <option>30 min</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Premium Plan Card in Settings -->
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">👑 <span data-uz="Tarif rejasi" data-en="Subscription Plan" data-de="Abonnementplan">Tarif rejasi</span></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:var(--off-white);border-radius:12px">
+          <div>
+            <div style="font-weight:700;color:var(--text)" data-uz="Bepul rejim" data-en="Free Plan" data-de="Kostenloser Plan">Bepul rejim</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:4px" data-uz="5 ta dars, cheklangan flashcard" data-en="5 lessons, limited flashcards" data-de="5 Lektionen, begrenzte Karteikarten">5 ta dars, cheklangan flashcard</div>
+          </div>
+          <button class="btn-upgrade" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:white;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif" onclick="openPayment()" data-uz="Premium ga o'tish" data-en="Go Premium" data-de="Premium werden">Premium ga o'tish</button>
+        </div>
+      </div>
+    
+<div id="aichat" class="content-section">
+  <div class="ai-chat-card">
+    <h2>🤖 AI Nemis Ustoz</h2>
+    <div id="chatBox" class="chat-box">
+      <div class="msg ai">Salom! Nemis tilida gap yozing. Masalan: Ich lerne Deutsch.</div>
+    </div>
+    <div class="chat-row">
+      <input id="chatInput" placeholder="Xabaringizni yozing...">
+      <button onclick="sendAIMessage()">Yuborish</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+let currentLang = 'uz';
+let isDark = false;
+let fcIndex = 2;
+let fcRightCount = 2;
+let fcWrongCount = 1;
+let isFlipped = false;
+let notifEnabled = true;
+let selectedPlan = 'monthly';
+
+const pageTitles = {
+  uz: { dashboard:'Bosh sahifa', levels:'Darajalar', lessons:'Darslar — A2', vocabulary:"Lug'at", flashcards:'Flashcard', grammar:'Grammatika', tests:'Testlar', certificate:'Sertifikat', profile:'Mening profilim', settings:'Sozlamalar' },
+  en: { dashboard:'Dashboard', levels:'Levels', lessons:'Lessons — A2', vocabulary:'Vocabulary', flashcards:'Flashcards', grammar:'Grammar', tests:'Tests', certificate:'Certificate', profile:'My Profile', settings:'Settings' },
+  de: { dashboard:'Startseite', levels:'Niveaus', lessons:'Lektionen — A2', vocabulary:'Wortschatz', flashcards:'Karteikarten', grammar:'Grammatik', tests:'Tests', certificate:'Zertifikat', profile:'Mein Profil', settings:'Einstellungen' }
+};
+
+const fcWords = [
+  {word:'Wasser', phonetic:'[ ˈvasɐ ]', uz:'Suv', en:'Water', de:'Wasser', example:'Das Wasser ist kalt.', exUz:'Suv sovuq.'},
+  {word:'Buch', phonetic:'[ buːx ]', uz:'Kitob', en:'Book', de:'Buch', example:'Das Buch ist interessant.', exUz:'Kitob qiziqarli.'},
+  {word:'Haus', phonetic:'[ haʊs ]', uz:'Uy', en:'House', de:'Haus', example:'Das Haus ist groß.', exUz:'Uy katta.'},
+  {word:'Auto', phonetic:'[ ˈaʊto ]', uz:'Mashina', en:'Car', de:'Auto', example:'Das Auto ist neu.', exUz:'Mashina yangi.'},
+  {word:'Kind', phonetic:'[ kɪnt ]', uz:'Bola', en:'Child', de:'Kind', example:'Das Kind spielt.', exUz:'Bola o\'ynayapti.'},
+  {word:'Schule', phonetic:'[ ˈʃuːlə ]', uz:'Maktab', en:'School', de:'Schule', example:'Die Schule ist groß.', exUz:'Maktab katta.'},
+  {word:'Arbeit', phonetic:'[ ˈarbaɪt ]', uz:'Ish', en:'Work', de:'Arbeit', example:'Die Arbeit ist schwer.', exUz:'Ish og\'ir.'},
+  {word:'Zeit', phonetic:'[ tsaɪt ]', uz:'Vaqt', en:'Time', de:'Zeit', example:'Die Zeit vergeht schnell.', exUz:'Vaqt tez o\'tadi.'},
+];
+
+// TOAST
+function showToast(icon, msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  if(type==='success') t.style.borderLeftColor='var(--success)';
+  if(type==='warning') t.style.borderLeftColor='var(--gold)';
+  t.innerHTML = `<span class="toast-icon">${icon}</span><span style="flex:1">${msg}</span><span class="toast-close" onclick="this.parentElement.remove()">✕</span>`;
+  c.appendChild(t);
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ t.classList.add('show'); }); });
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),400); }, 4000);
+  document.querySelector('.notif-dot') && (document.querySelector('.notif-dot').style.display='none');
+}
+
+function showProgressNotif() {
+  showToast('🔥','12 kunlik seriyangiz bor! Bugun ham o\'rganing.', 'warning');
+  setTimeout(()=>showToast('📈','+18 so\'z bu hafta o\'rgandingiz!','success'),600);
+  setTimeout(()=>showToast('🎯','A2 darajangiz 65% bajarildi — davom eting!',''),1200);
+}
+
+// DARK MODE
+function toggleDark() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
+  showToast(isDark?'🌙':'☀️', isDark?'Qorong\'u rejim yoqildi':'Yorug\' rejim yoqildi','');
+}
+
+// LANG
+function setLang(lang, clickedBtn) {
+  currentLang = lang;
+  document.querySelectorAll('[data-uz]').forEach(el => {
+    const val = el.getAttribute('data-' + lang);
+    if (val !== null) {
+      if (el.tagName === 'INPUT') el.placeholder = val;
+      else if (el.tagName === 'OPTION') el.textContent = val;
+      else el.innerHTML = val;
+    }
+  });
+  // placeholder support for pay inputs
+  document.querySelectorAll('[data-uz-placeholder]').forEach(el => {
+    const val = el.getAttribute('data-' + lang + '-placeholder');
+    if(val) el.placeholder = val;
+  });
+  document.querySelectorAll('.lang-btn, .topbar-lang button').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.lang-btn, .topbar-lang button').forEach(b => {
+    const txt = b.textContent.trim();
+    if ((lang==='uz'&&txt==="O'ZB")||(lang==='en'&&txt==='ENG')||(lang==='de'&&txt==='DEU')) b.classList.add('active');
+  });
+  // settings buttons
+  ['settingsUzBtn','settingsEnBtn','settingsDeBtn'].forEach((id,i)=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    const active = (i===0&&lang==='uz')||(i===1&&lang==='en')||(i===2&&lang==='de');
+    el.style.background = active?'var(--navy)':'none';
+    el.style.color = active?'white':'var(--gray-600)';
+    el.style.borderColor = active?'var(--navy)':'var(--border)';
+  });
+  const activeSection = document.querySelector('.content-section.active');
+  if(activeSection) document.getElementById('pageTitle').textContent = pageTitles[lang][activeSection.id]||'';
+  document.querySelectorAll('.level-filter').forEach(b => {
+    const v = b.getAttribute('data-'+lang);
+    if(v) b.textContent = v;
+  });
+  updateFCDisplay();
+}
+
+function goToPlatform() {
+  document.getElementById('loginPage').classList.remove('active');
+  document.getElementById('platformPage').classList.add('active');
+  setTimeout(()=>{
+    showToast('👋','Xush kelibsiz! Bugungi maqsad: 20 daqiqa o\'rganish.','success');
+    setTimeout(()=>showToast('🔥','12 kunlik seriyangiz davom etmoqda!','warning'),1000);
+  },500);
+}
+
+function googleLogin() {
+  showToast('🔄','Google orqali kirish...','');
+  setTimeout(()=>goToPlatform(),1000);
+}
+
+function logout() {
+  document.getElementById('platformPage').classList.remove('active');
+  document.getElementById('loginPage').classList.add('active');
+}
+
+function showSection(id, navEl) {
+  document.querySelectorAll('.content-section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[currentLang][id]||id;
+  if(navEl) { document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); navEl.classList.add('active'); }
+}
+
+// AUDIO
+function playAudio() {
+  const btn = document.getElementById('audioBtn');
+  btn.classList.add('playing');
+  const word = document.getElementById('vocabWord').textContent;
+  if('speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'de-DE'; u.rate = 0.85;
+    u.onend = ()=>btn.classList.remove('playing');
+    speechSynthesis.speak(u);
+  } else {
+    setTimeout(()=>btn.classList.remove('playing'),1500);
+  }
+  showToast('🔊','"'+word+'" — nemischa talaffuz.','');
+}
+
+function playFlashcardAudio() {
+  const word = document.getElementById('fcWord').textContent;
+  if('speechSynthesis' in window) {
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'de-DE'; u.rate = 0.85;
+    speechSynthesis.speak(u);
+  }
+  showToast('🔊','"'+word+'" talaffuzi yangradi.','');
+}
+
+// VOCABULARY CHECK
+function checkVocab(btn, type) {
+  if(type==='correct'){
+    btn.style.background='var(--success)'; btn.style.color='white'; btn.style.borderColor='var(--success)';
+    showToast('✅','To\'g\'ri! +10 XP qo\'shildi.','success');
+  } else {
+    btn.style.background='#fee2e2'; btn.style.color='#dc2626'; btn.style.borderColor='#dc2626';
+    showToast('❌','Noto\'g\'ri. To\'g\'ri javob: Uy','');
+  }
+  setTimeout(()=>{ btn.style.background=''; btn.style.color=''; btn.style.borderColor=''; },1500);
+}
+
+// FLASHCARD
+function updateFCDisplay() {
+  const w = fcWords[fcIndex % fcWords.length];
+  document.getElementById('fcWord').textContent = w.word;
+  document.getElementById('fcPhonetic').textContent = w.phonetic;
+  const tKey = currentLang==='de'?'de':(currentLang==='en'?'en':'uz');
+  document.getElementById('fcTranslation').textContent = w[tKey];
+  document.getElementById('fcExample').innerHTML = w.example+'<br><em style="opacity:0.7">'+w.exUz+'</em>';
+  const total = fcWords.length;
+  const cur = fcIndex+1;
+  document.getElementById('fcCounter').textContent = cur+'/'+total;
+  document.getElementById('fcPercent').textContent = Math.round((cur/total)*100)+'%';
+  document.getElementById('fcBar').style.width = Math.round((cur/total)*100)+'%';
+  document.getElementById('fcRight').textContent = fcRightCount;
+  document.getElementById('fcWrong').textContent = fcWrongCount;
+  document.getElementById('fcRemain').textContent = total - fcIndex - 1;
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+}
+
+function fcAnswer(correct) {
+  if(correct){ fcRightCount++; showToast('✅','To\'g\'ri! +5 XP','success'); }
+  else { fcWrongCount++; showToast('❌','Noto\'g\'ri — keyingi safar eslab qoling.',''); }
+  isFlipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  fcIndex = (fcIndex+1) % fcWords.length;
+  setTimeout(updateFCDisplay, 350);
+  if(fcIndex===0) setTimeout(()=>showToast('🎉','Barcha kartochkalar ko\'rib chiqildi! Ajoyib!','success'),400);
+}
+
+// PAYMENT MODAL
+function openPayment(){ document.getElementById('paymentModal').classList.add('open'); }
+function closePayment(){ document.getElementById('paymentModal').classList.remove('open'); }
+function selectPlan(el, plan){
+  document.querySelectorAll('.plan-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedPlan = plan;
+}
+function processPay(){
+  closePayment();
+  showToast('🎉','Premium obuna muvaffaqiyatli faollashtirildi!','success');
+  setTimeout(()=>showToast('👑','Endi barcha darslar va sertifikat sizga ochiq!','success'),800);
+  document.getElementById('premiumBanner').style.display='none';
+}
+
+// NOTIF TOGGLE
+function toggleNotif(){
+  notifEnabled = !notifEnabled;
+  const dot = document.getElementById('notifDot');
+  const bg = dot.parentElement.querySelector('span');
+  if(notifEnabled){ dot.style.transform='translateX(20px)'; bg.style.background='var(--success)'; showToast('🔔','Bildirishnomalar yoqildi.','success'); }
+  else { dot.style.transform='translateX(0)'; bg.style.background='var(--gray-400)'; showToast('🔕','Bildirishnomalar o\'chirildi.',''); }
+}
+
+document.querySelectorAll('.level-filter').forEach(btn=>{
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.level-filter').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+
+document.getElementById('paymentModal').addEventListener('click',function(e){
+  if(e.target===this) closePayment();
+});
+
+// Auto progress notifications after 5s
+setTimeout(()=>{
+  if(document.getElementById('platformPage').classList.contains('active')) return;
+},5000);
+
+updateFCDisplay();
+
+function sendAIMessage(){
+ const i=document.getElementById('chatInput');
+ const b=document.getElementById('chatBox');
+ const t=i.value.trim();
+ if(!t)return;
+ b.innerHTML+=`<div class="msg user">${t}</div>`;
+ let r='Yaxshi! Shu gapni nemis tilida ham yozib ko‘ring.';
+ const m=t.toLowerCase();
+ if(m.includes('salom')) r='Hallo! Wie geht es dir?';
+ if(m.includes('ich')) r='Sehr gut! Nemischa gap tuzayotgan ekansiz.';
+ if(m.includes('deutsch')) r='Ajoyib! Har kuni 10 ta yangi so‘z o‘rganing.';
+ setTimeout(()=>{b.innerHTML+=`<div class="msg ai">${r}</div>`;b.scrollTop=b.scrollHeight;},300);
+ i.value='';
+}
+
+</script>
+</body>
+</html>
